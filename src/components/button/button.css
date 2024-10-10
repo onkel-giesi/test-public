@@ -1,0 +1,7 @@
+.button {
+  border: 10px solid red;
+}
+
+.clicked {
+  border: 10px solid green;
+}

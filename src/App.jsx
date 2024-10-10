@@ -1,7 +1,7 @@
 
 import '@aws-amplify/ui-react/styles.css';
 import './App.css';
-import { withAuthenticator, View, Card, Flex, Menu, MenuItem } from '@aws-amplify/ui-react';
+import { ThemeProvider, withAuthenticator, View, Card, Flex, Menu, MenuItem, ToggleButtonGroup, ToggleButton } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 //* import { uploadData, getUrl } from 'aws-amplify/storage'; *//
@@ -13,6 +13,7 @@ import {
   deleteTodo as deleteTodoMutation,
 } from "./graphql/mutations";
 import TodoApp from './apps/todo/todo-app';
+import HomeApp from './apps/home/home';
 
 Amplify.configure(config);
 const client = generateClient();
@@ -22,6 +23,7 @@ const client = generateClient();
 function App({ signOut }) {
   const [todos, setTodos] = useState([]);
   const [content, setContent] = useState('');
+  const [colorMode, setColorMode] = useState('system');
 
   useEffect(() => {
     fetchTodos();
@@ -74,34 +76,47 @@ function App({ signOut }) {
     });
   }
 
-  const homeContent = <div>Hello World!</div>;
-
   const getApp = () => {
     switch (content) {
       case "home":
-        return homeContent;
+        return <HomeApp />;
       case "todo":
         return <TodoApp todosArr={todos} funcCreateTodo={createTodo} funcDeleteTodo={deleteTodo} />
       default:
-        return homeContent;
+        return <HomeApp />;
     }
   }
   
   return (
-    <View className="App">
-      <Flex direction={'row'} alignItems={'center'} gap={'10px'}>
-        <Card>
-          <Menu>
+    <ThemeProvider colorMode={colorMode}>
+      <header>
+        <Flex direction={'row'} alignItems={'center'} gap={'10px'}>
+          <Card>
+            <Menu>
+              <MenuItem variation='primary' onClick={() => setApp('home')}>Home</MenuItem>
+              <MenuItem variation='primary' onClick={() => setApp('todo')}>Todo app</MenuItem>
+              <MenuItem variation='primary' onClick={signOut}>Sign out</MenuItem>
+            </Menu>
+          </Card>
+          <Card>
+            <ToggleButtonGroup value={colorMode} onChange={(value) => setColorMode(value)} size='small'>
+              <ToggleButton value='light'>L</ToggleButton>
+              <ToggleButton value='dark'>D</ToggleButton>
+              <ToggleButton value='system'>S</ToggleButton>
+            </ToggleButtonGroup>
+          </Card>
+        </Flex>
+      </header>
+      <main>
+        <View className="App">
+          { getApp(content) }
+        </View>
+      </main>
+      <footer>
 
-            <MenuItem onClick={() => setApp('home')}>Home</MenuItem>
-            <MenuItem onClick={() => setApp('todo')}>Todo app</MenuItem>
-            <MenuItem onClick={signOut}>Sign out</MenuItem>
-          </Menu>
-        </Card>
-      </Flex>
-      { getApp(content) }
-    </View>
+      </footer>
+    </ThemeProvider>
   );
 }
 
-export default withAuthenticator(App);
+export default withAuthenticator(App, {hideSignUp: true});
